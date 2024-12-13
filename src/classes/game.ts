@@ -1,17 +1,19 @@
 export class Game {
-  playerScore: number;
-  computerScore: number;
+  playersHoleCards: string[];
+  computersHoleCards: string[];
+  boardCards: string[];
 
-  constructor() {
-    this.playerScore = 0;
-    this.computerScore = 0;
+  constructor(
+    playerHoleCards: string[],
+    computerHoleCards: string[],
+    boardCards: string[]
+  ) {
+    this.playersHoleCards = playerHoleCards;
+    this.computersHoleCards = computerHoleCards;
+    this.boardCards = boardCards;
   }
 
-  getScores() {
-    return { playerScore: this.playerScore, computerScore: this.computerScore };
-  }
-
-  calculateHand(hand: string[], boardCards: string[]): string {
+  private calculateHand(hand: string[], boardCards: string[]): string {
     if (this.isPocketPair(hand)) {
       return `${hand[0][0]}`;
     }
@@ -39,8 +41,13 @@ export class Game {
     return 'High Card';
   }
 
-  getHandsRank(hand: string): number {
-    switch (hand[0]) {
+  /**
+   *
+   * @param handValue This is the first char of the card string e.g 'Ac' is 'A' is Ace of clubs, we only care about the card and not not the suit
+   * @returns
+   */
+  private getHandsRank(handValue: string): number {
+    switch (handValue) {
       case '2':
         return 2;
       case '3':
@@ -56,7 +63,30 @@ export class Game {
     }
   }
 
-  getGameResults(
+  getGameResults() {
+    const computersHand = this.calculateHand(
+      this.computersHoleCards,
+      this.boardCards
+    );
+    const computersHandRank = this.getHandsRank(computersHand[0]);
+
+    const playersHand = this.calculateHand(
+      this.playersHoleCards,
+      this.boardCards
+    );
+    const playersHandRank = this.getHandsRank(playersHand[0]);
+
+    this.printGameResults(
+      { playersHand, playersHandRank, playersHoleCards: this.playersHoleCards },
+      {
+        computersHand,
+        computersHandRank,
+        computersHoleCards: this.computersHoleCards,
+      }
+    );
+  }
+
+  private printGameResults(
     player: {
       playersHand: string;
       playersHandRank: number;
@@ -67,19 +97,22 @@ export class Game {
       computersHandRank: number;
       computersHoleCards: string[];
     }
-  ): string {
+  ): void {
+    const playerStr = `The Player had [${player.playersHoleCards}] which was ${player.playersHand}'s`;
+    const computerStr = `The Computer had [${computer.computersHoleCards}] which was ${computer.computersHand}'s`;
+
     if (player.playersHandRank === computer.computersHandRank) {
-      return `DRAW -> The Player had [${player.playersHoleCards}] which was ${player.playersHand}'s, The Computer had [${computer.computersHoleCards}] which was ${computer.computersHand}'s`;
-    }
+      const resultDraw = `DRAW -> ${playerStr} and ${computerStr}`;
 
-    if (player.playersHandRank > computer.computersHandRank) {
-      return `PLAYER WINNER with ${player.playersHand}'s, The Computer had [${computer.computersHoleCards}] which was ${computer.computersHand}'s`;
-    }
+      console.log(resultDraw);
+    } else if (player.playersHandRank > computer.computersHandRank) {
+      const resultPlayerWinner = `PLAYER WINNER -> ${playerStr} and ${computerStr}`;
 
-    return `COMPUTER WINNER with ${computer.computersHand}'s, The Player had [${player.playersHoleCards}] which was ${player.playersHand}'s`;
+      console.log(resultPlayerWinner);
+    } else {
+      const resultComputerWinner = `COMPUTER WINNER -> ${computerStr} and ${playerStr}`;
+
+      console.log(resultComputerWinner);
+    }
   }
-
-  // look for other hands e.g. flush, boat
-
-  // look for high card
 }
